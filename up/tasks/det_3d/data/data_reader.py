@@ -2,84 +2,11 @@ import copy
 import numpy as np
 import os
 from skimage import io
-import open3d as o3d
+# import open3d as o3d
 
 from up.utils.general.registry_factory import IMAGE_READER_REGISTRY
 from up.data.image_reader import ImageReader
 from up.utils.general.petrel_helper import PetrelHelper
-
-
-@IMAGE_READER_REGISTRY.register('kitti')
-class KittiReader(ImageReader):
-    def __init__(self, image_dir, color_mode, memcached=None, to_float32=False):
-        super(KittiReader, self).__init__(image_dir, color_mode, memcached)
-        self.to_float32 = to_float32
-        self.root_dir = self.image_dir
-
-    def get_calib(self, idx):
-        calib_file = os.path.join(self.root_dir, 'calib', '{}.txt'.format(idx))
-        return Calibration(calib_file)
-
-    def get_image(self, idx):
-        """
-        Loads image for a sample
-        Args:
-            idx: int, Sample index
-        Returns:
-            image: (H, W, 3), RGB Image
-        """
-        img_file = os.path.join(self.root_dir, 'image_2', '{}.png'.format(idx))
-        assert os.path.exists(img_file)
-        image = io.imread(img_file)
-        image = image.astype(np.float32)
-        image /= 255.0
-        return image
-
-    def get_road_plane(self, idx):
-        plane_file = os.path.join(self.root_dir, 'planes', '{}.txt'.format(idx))
-        lines = []
-        with PetrelHelper.open(plane_file) as f:
-            for line in f:
-                lines.append(line)
-        lines = [float(i) for i in lines[3].split()]
-        plane = np.asarray(lines)
-
-        # Ensure normal is always facing up, this is in the rectified camera coordinate
-        if plane[1] > 0:
-            plane = -plane
-
-        norm = np.linalg.norm(plane[0:3])
-        plane = plane / norm
-        return plane
-
-    def get_depth_map(self, idx):
-        """
-        Loads depth map for a sample
-        Args:
-            idx: str, Sample index
-        Returns:
-            depth: (H, W), Depth map
-        """
-        depth_file = os.path.join(self.root_dir, 'depth_2', '{}.png'.format(idx))
-        assert depth_file.exists()
-        depth = io.imread(depth_file)
-        depth = depth.astype(np.float32)
-        depth /= 256.0
-        return depth
-
-    def get_lidar(self, idx):
-        lidar_file = os.path.join(self.root_dir, 'velodyne', '{}.bin'.format(idx))
-        f = PetrelHelper._petrel_helper.load_data(lidar_file, ceph_read=False, fs_read=True, mode='rb')
-        res = np.frombuffer(f, np.float32).reshape(-1, 4)[:, :3].copy()
-        return res
-
-    def get_lidar_pcd(self, path):
-        base_path = path.split('/')[-1]
-        lidar_file = os.path.join(self.root_dir, base_path)
-        pcd = o3d.io.read_point_cloud(lidar_file)
-        pc_velo = np.asarray(pcd.points)
-        return copy.deepcopy(pc_velo)
-
 
 class Calibration(object):
     def __init__(self, calib_file):

@@ -1,0 +1,29 @@
+{
+	"name": "UNITED-PERCEPTION",
+	"build": {
+		"context": "..",
+		"dockerfile": "../dockerfile"
+	},
+	"runArgs": [
+		"--gpus",
+		"all",
+		"--privileged",
+		"--shm-size=16g",
+		"--ipc=host"
+	],
+	"postCreateCommand": "pip install ujson && pip install -v -e .",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"charliermarsh.ruff",
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"GitHub.copilot",
+				"redjue.git-commit-plugin"
+			]
+		}
+	},
+	"mounts": [
+		"source=${localEnv:HOME}/data/coco,target=${containerWorkspaceFolder}/coco,type=bind,consistency=cached"
+	]
+}

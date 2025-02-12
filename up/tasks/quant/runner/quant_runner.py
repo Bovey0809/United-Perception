@@ -86,7 +86,8 @@ class QuantRunner(BaseRunner):
                 'snpe': BackendType.SNPE,
                 'vitis': BackendType.Vitis,
                 'academic': BackendType.Academic,
-                'tengine': BackendType.Tengine_u8}
+                'tengine': BackendType.Tengine_u8,
+                'nnie': BackendType.NNIE,}
 
     @property
     def quant_type(self):

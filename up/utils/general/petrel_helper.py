@@ -157,6 +157,9 @@ class PetrelCOCO(COCO):
         :param image_folder (str): location to the folder that hosts images.
         :return:
         """
+        # Call the __init__ method of the COCO class
+        super(PetrelCOCO, self).__init__(annotation_file=annotation_file, use_ext=False, multi_procs=(1, None), num_threads=1)
+
         # load dataset
         self.dataset, self.anns, self.cats, self.imgs = dict(), dict(), dict(), dict()
         self.imgToAnns, self.catToImgs = defaultdict(list), defaultdict(list)
@@ -164,7 +167,7 @@ class PetrelCOCO(COCO):
             print('loading annotations into memory...')
             tic = time.time()
             dataset = PetrelHelper.load_json(annotation_file)
-            assert type(dataset) == dict, 'annotation file format {} not supported'.format(type(dataset))
+            assert isinstance(dataset, dict), 'annotation file format {} not supported'.format(type(dataset))
             print('Done (t={:0.2f}s)'.format(time.time() - tic))
             self.dataset = dataset
             self.createIndex()

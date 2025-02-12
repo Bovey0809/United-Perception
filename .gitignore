@@ -23,3 +23,7 @@ build
 .vscode/
 *_build
 .env
+coco/
+log/
+UP.egg-info/
+checkpoints/

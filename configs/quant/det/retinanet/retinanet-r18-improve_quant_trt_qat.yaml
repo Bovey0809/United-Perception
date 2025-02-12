@@ -7,7 +7,7 @@ runtime:
   task_names: quant_det
 quant:
   quant_type: qat
-  deploy_backend: tensorrt
+  deploy_backend: nnie
   cali_batch_size: 900
   prepare_args:
     extra_qconfig_dict:
@@ -141,7 +141,7 @@ trainer: # Required.
 
 saver: # Required.
   save_dir: checkpoints/retinanet-r18-improve_quant_trt    # dir to save checkpoints
-  resume_model: resume_path
+  resume_model: retinanet-improve.pth
   results_dir: results_dir/retinanet-r18-improve_quant_trt  # dir to save detection results. i.e., bboxes, masks, keypoints
   auto_resume: false  # find last checkpoint from save_dir and resume from it automatically
                      # this option has the highest priority (auto_resume > opts > resume_model > pretrain_model)

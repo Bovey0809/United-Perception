@@ -1,6 +1,7 @@
 # Standard Library
 import time
-from collections import Iterable, OrderedDict
+from collections import OrderedDict
+from collections.abc import Iterable
 
 import numpy as np
 import torch

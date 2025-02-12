@@ -25,7 +25,7 @@ def launch(
     dist_url='auto',
     args=(),
     timeout=DEFAULT_TIMEOUT,
-    start_method='fork'
+    start_method='spawn'  # Change default to 'spawn' instead of 'fork'
 ):
     """
     Args:
@@ -79,9 +79,29 @@ def _distributed_worker(
     args,
     timeout=DEFAULT_TIMEOUT,
 ):
-    assert (
-        torch.cuda.is_available()
-    ), "cuda is not available. Please check your installation."
+    # Add to _distributed_worker
+    torch.cuda.init()
+    torch.cuda.is_available()
+
+    import os
+    logger.info(f"LD_LIBRARY_PATH: {os.environ.get('LD_LIBRARY_PATH', '')}")
+    logger.info(f"CUDA_VISIBLE_DEVICES: {os.environ.get('CUDA_VISIBLE_DEVICES', '')}")
+    logger.info(f"CUDA available: {torch.cuda.is_available()}, Device count: {torch.cuda.device_count()}")
+    try:
+        torch.cuda.set_device(local_rank)
+        test_tensor = torch.tensor([1.0], device=torch.device(f"cuda:{local_rank}"))
+        logger.info(f"Rank {local_rank} successfully set device to {local_rank}")
+        device = torch.device("cuda", local_rank)
+    except Exception as e:
+        logger.error(f"Error setting device {local_rank}: {e}")
+        raise
+
+    if not torch.cuda.is_available():
+        logger.error(f"CUDA not available for rank {local_rank} after initialization")
+        raise RuntimeError("CUDA unavailable")
+
+    
+    
     global_rank = machine_rank * num_gpus_per_machine + local_rank
     logger.info("Rank {} initialization finished.".format(global_rank))
     try:
@@ -113,5 +133,5 @@ def _distributed_worker(
     dist_helper.barrier()
 
     assert num_gpus_per_machine <= torch.cuda.device_count()
-    torch.cuda.set_device(local_rank)
+    
     main_func(args)
