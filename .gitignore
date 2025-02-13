@@ -27,3 +27,4 @@ coco/
 log/
 UP.egg-info/
 checkpoints/
+*.onnx

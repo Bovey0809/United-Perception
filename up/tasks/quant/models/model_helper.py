@@ -73,8 +73,7 @@ class QuantModelHelper(nn.Module):
 
     def forward(self, input):
         for submodule in self.children():
-            output = submodule(input)
-            input.update(output)
+            input = submodule(input)
         return input
 
     def train(self, mode=True):

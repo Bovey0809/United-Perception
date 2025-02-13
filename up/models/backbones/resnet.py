@@ -724,7 +724,7 @@ class ResNet(nn.Module):
 
         return torch.tensor(self.out_strides, dtype=torch.int)
 
-    def forward(self, input):
+    def forward(self, x):
         """
 
         Arguments:
@@ -741,7 +741,7 @@ class ResNet(nn.Module):
                 'strides': []   # list of int
             }
         """
-        x = input['image']
+        # x = input['image']
         outs = []
         for layer_idx in range(0, 5):
             layer = getattr(self, f'layer{layer_idx}', None)
@@ -754,7 +754,8 @@ class ResNet(nn.Module):
                 outs.append(x)
 
         features = [outs[i] for i in self.out_layers]
-        return {'features': features, 'strides': self.get_outstrides()}
+        return features, self.get_outstrides()
+        # return {'features': features, 'strides': self.get_outstrides()}
 
     def freeze_layer(self):
         layers = [

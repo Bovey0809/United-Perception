@@ -4,6 +4,7 @@ from up.utils.general.registry_factory import DEPLOY_REGISTRY
 from up.tasks.quant.runner import QuantRunner
 from mqbench.utils.state import enable_quantization
 from up.utils.general.global_flag import DEPLOY_FLAG
+import inspect
 
 
 __all__ = ['QuantDeploy']
@@ -26,7 +27,7 @@ class QuantDeploy(QuantRunner):
         enable_quantization(self.model)
 
     def resume_model_from_quant(self):
-        self.model.load_state_dict(self.ckpt['model'])
+        self.model.load_state_dict(self.ckpt['model'], strict=False)
 
     def get_onnx_dummy_input(self):
         self.model.cuda().eval()
@@ -34,8 +35,8 @@ class QuantDeploy(QuantRunner):
         self.build_dataloaders()
         self.build_hooks()
         batch = self.get_batch('test')
-        output = self.model(batch)
-        self.dummy_input = {k: v for k, v in output.items() if torch.is_tensor(v)}
+        output = self.model(batch['image'])
+        self.dummy_input = batch['image']
         DEPLOY_FLAG.flag = True
 
     def deploy(self):
@@ -43,13 +44,15 @@ class QuantDeploy(QuantRunner):
         from mqbench.convert_deploy import convert_deploy
         deploy_backend = self.config['quant']['deploy_backend']
         self.model.cuda().eval()
-        print('ONNX input shape is: ', self.dummy_input['image'].shape)
+        print('ONNX input shape is: ', self.dummy_input.shape)
 
         for index, mname in enumerate(self.model_list):
             mod = getattr(self.model, mname)
             print('{}/{} model will be exported.'.format(index + 1, len(self.model_list)))
             print('Model name is : ', mname)
             print()
+            
+            mod.eval()
             convert_deploy(model=mod,
                            backend_type=self.backend_type[deploy_backend],
                            dummy_input=self.dummy_input,

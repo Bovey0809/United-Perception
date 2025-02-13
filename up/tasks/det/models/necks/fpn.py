@@ -112,7 +112,7 @@ class FPN(nn.Module):
     def get_pconv(self, idx):
         return getattr(self, self.get_pconv_name(idx))
 
-    def forward(self, input):
+    def forward(self, features):
         """
         .. note::
 
@@ -139,7 +139,7 @@ class FPN(nn.Module):
                 'strides': []   # list of int
             }
         """
-        features = input['features']
+        # features = input['features']
         laterals = [self.get_lateral(i)(features[i]) for i in range(len(self.inplanes))]
         features = []
 
@@ -169,7 +169,8 @@ class FPN(nn.Module):
             if lvl_idx >= len(self.inplanes):
                 x = self.get_downsample(lvl_idx)(x)
                 features.append(x)
-        return {'features': features, 'strides': self.get_outstrides()}
+        return features, self.get_outstrides()
+        # return {'features': features, 'strides': self.get_outstrides()}
 
     def get_outplanes(self):
         """

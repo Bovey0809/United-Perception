@@ -42,8 +42,7 @@ class BaseNet(nn.Module):
         assert isinstance(inplanes, int)
         self.inplanes = inplanes
 
-    def forward(self, input):
-        features = input['features']
+    def forward(self, features):
         mlvl_raw_preds = [self.forward_net(features[lvl], lvl) for lvl in range(self.num_level)]
         output = {}
         output['preds'] = mlvl_raw_preds

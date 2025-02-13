@@ -130,13 +130,11 @@ class ModelHelper(nn.Module):
             In Mimic task, input may be fed into teacher & student networks respectivly,
             inplace update may cause the input dict only keep the last forward results, which is unexpected.
         """
-        for submodule in self.children():
-            output = submodule(input)
-            input.update(output)
-        if not DEPLOY_FLAG.flag:
-            return input
-        else:
-            return input['deploy_output_node']
+        # forward
+        features, strides = self.backbone(input)
+        features, out_strides = self.neck(features)
+        output = self.roi_head(features)
+        return output
 
     def load(self, other_state_dict, strict=False):
         """

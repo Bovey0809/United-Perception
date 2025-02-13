@@ -64,7 +64,8 @@ class QuantRunner(BaseRunner):
 
     def resume_model_from_fp(self):
         def add_prefix(state_dict):
-            f = lambda x: self.model_map[x.split('.')[0]] + '.' + x
+            def f(x):
+                return self.model_map[x.split('.')[0]] + '.' + x
             return {f(key): value for key, value in state_dict.items()}
         if 'quant' not in self.ckpt:
             self.model.load_state_dict(add_prefix(self.ckpt['model']))
@@ -137,6 +138,7 @@ class QuantRunner(BaseRunner):
             setattr(self.model, mname, mod)
             if env.is_master():
                 print(mod)
+                mod.print_readable()
 
         quant_tricks = self.config['quant'].get('tricks', {})
         special_layers = quant_tricks.get('special', None)
